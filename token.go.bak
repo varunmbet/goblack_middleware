@@ -1,0 +1,27 @@
+package middleware
+
+import (
+	"gocms/app/models"
+	"gocms/goblack"
+)
+
+func Token() goblack.HandlerFunc {
+	return func(c *goblack.Context) {
+		authorization, err := c.SessionGet("admininfo")
+		//判断权限
+		if authorization == nil && err != nil {
+			c.Break()
+			//utils.OutWrong(c, 4001, "无授权信息", nil)
+			return
+		}
+
+		userinfo := authorization.(models.Sys_admin)
+		if userinfo.Status != 1 {
+			c.Break()
+			//utils.OutWrong(c, 400, "该用户为未启用状态", nil)
+			return
+		}
+		// 处理请求
+		c.Next()
+	}
+}
